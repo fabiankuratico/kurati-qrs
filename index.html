@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kurati QRs — Plataforma profesional de QR</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:system-ui,sans-serif;background:#0f0f13;color:#e8e8f0;height:100vh;overflow:hidden;}
+.sidebar{position:fixed;left:0;top:0;bottom:0;width:220px;background:#0d0d11;border-right:0.5px solid #1e1e2e;display:flex;flex-direction:column;z-index:10;}
+.brand{padding:22px 20px 18px;display:flex;align-items:center;gap:10px;border-bottom:0.5px solid #1e1e2e;}
+.brand-logo{width:34px;height:34px;background:linear-gradient(135deg,#7c3aed,#4f46e5);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.brand-logo i{color:#fff;font-size:18px;}
+.brand-name{font-size:17px;font-weight:700;color:#fff;letter-spacing:-0.3px;}
+.brand-name span{color:#7c3aed;}
+nav{flex:1;padding:12px 10px;display:flex;flex-direction:column;gap:2px;}
+.nav-section{font-size:10px;font-weight:600;color:#3a3a5a;text-transform:uppercase;letter-spacing:0.08em;padding:10px 10px 4px;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:9px;cursor:pointer;font-size:13px;color:#666;transition:all 0.15s;border:none;background:none;width:100%;text-align:left;}
+.nav-item i{font-size:18px;flex-shrink:0;}
+.nav-item:hover{background:#1a1a24;color:#aaa;}
+.nav-item.active{background:#1e1040;color:#c4b5fd;}
+.nav-item .badge-count{margin-left:auto;background:#2a1a5a;color:#a78bfa;font-size:10px;padding:2px 7px;border-radius:8px;}
+.sidebar-footer{padding:14px 10px;border-top:0.5px solid #1e1e2e;}
+.user-card{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;background:#1a1a24;cursor:pointer;}
+.avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#ec4899);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:#fff;flex-shrink:0;}
+.user-info{flex:1;min-width:0;}
+.user-name{font-size:12px;font-weight:500;color:#e8e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.user-plan{font-size:10px;color:#7c3aed;}
+.main{margin-left:220px;height:100vh;overflow-y:auto;display:flex;flex-direction:column;}
+.page{display:none;flex-direction:column;flex:1;}
+.page.active{display:flex;}
+.topbar{padding:18px 32px;border-bottom:0.5px solid #1e1e2e;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.topbar-actions{display:flex;gap:8px;align-items:center;}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border-radius:10px;font-size:13px;cursor:pointer;transition:all 0.15s;border:0.5px solid #2a2a3a;background:#1a1a24;color:#aaa;}
+.btn:hover{border-color:#7c3aed;color:#c4b5fd;}
+.btn-primary{background:#7c3aed;border-color:#7c3aed;color:#fff;}
+.btn-primary:hover{background:#6d28d9;border-color:#6d28d9;}
+.btn i{font-size:16px;}
+.home-hero{padding:48px 32px 32px;display:flex;flex-direction:column;align-items:center;text-align:center;border-bottom:0.5px solid #1e1e2e;}
+.hero-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:20px;background:#1e1040;border:0.5px solid #7c3aed;color:#c4b5fd;font-size:12px;margin-bottom:20px;}
+.hero-title{font-size:42px;font-weight:800;color:#fff;letter-spacing:-1.5px;line-height:1.1;margin-bottom:12px;}
+.hero-title span{color:#7c3aed;}
+.hero-sub{font-size:16px;color:#666;max-width:480px;line-height:1.7;margin-bottom:28px;}
+.hero-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;}
+.btn-hero{padding:12px 24px;border-radius:12px;font-size:14px;font-weight:500;}
+.home-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:28px 32px;}
+.stat-mini{background:#1a1a24;border:0.5px solid #2a2a3a;border-radius:12px;padding:16px;}
+.stat-mini-label{font-size:11px;color:#555;margin-bottom:6px;display:flex;align-items:center;gap:5px;}
+.stat-mini-label i{font-size:13px;}
+.stat-mini-val{font-size:24px;font-weight:700;color:#fff;}
+.stat-mini-sub{font-size:11px;color:#34d399;margin-top:3px;}
+.home-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;padding:0 32px 32px;}
+.home-card{background:#1a1a24;border:0.5px solid #2a2a3a;border-radius:16px;padding:22px;cursor:pointer;transition:all 0.18s;position:relative;overflow:hidden;}
+.home-card:hover{border-color:#7c3aed;transform:translateY(-2px);}
+.card-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;margin-bottom:14px;font-size:22px;}
+.card-title{font-size:15px;font-weight:600;color:#fff;margin-bottom:6px;}
+.card-desc{font-size:12px;color:#666;line-height:1.6;}
+.card-arrow{position:absolute;top:20px;right:20px;color:#333;font-size:18px;transition:color 0.15s;}
+.home-card:hover .card-arrow{color:#7c3aed;}
+.gen-layout{display:grid;grid-template-columns:1fr 320px;flex:1;overflow:hidden;}
+.gen-left{padding:24px 28px;overflow-y:auto;border-right:0.5px solid #1e1e2e;}
+.gen-right{padding:24px 20px;overflow-y:auto;background:#0d0d11;display:flex;flex-direction:column;align-items:center;gap:18px;}
+.section-label{font-size:10px;font-weight:700;color:#444;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+.section-label i{font-size:13px;color:#7c3aed;}
+.section{margin-bottom:22px;}
+.type-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+.type-btn{padding:10px 6px;border-radius:10px;border:0.5px solid #2a2a3a;background:#1a1a24;color:#aaa;cursor:pointer;text-align:center;font-size:11px;transition:all 0.15s;display:flex;flex-direction:column;align-items:center;gap:4px;}
+.type-btn i{font-size:20px;}
+.type-btn:hover{border-color:#7c3aed;color:#c4b5fd;}
+.type-btn.active{border-color:#7c3aed;background:#1e1040;color:#c4b5fd;}
+.field-group{display:flex;flex-direction:column;gap:10px;}
+label{font-size:11px;color:#666;display:block;margin-bottom:4px;}
+input[type=text],input[type=tel],input[type=email],input[type=url],input[type=password],textarea,select{width:100%;padding:9px 12px;background:#1a1a24;border:0.5px solid #2a2a3a;border-radius:8px;color:#e8e8f0;font-size:13px;outline:none;transition:border-color 0.15s;font-family:inherit;}
+input:focus,textarea:focus,select:focus{border-color:#7c3aed;}
+textarea{resize:vertical;min-height:72px;}
+select option{background:#1a1a24;}
+.color-swatch{width:36px;height:36px;border-radius:8px;border:0.5px solid #3a3a4a;cursor:pointer;overflow:hidden;position:relative;}
+.color-swatch input[type=color]{position:absolute;inset:-4px;width:calc(100%+8px);height:calc(100%+8px);opacity:0;cursor:pointer;}
+.color-preview{width:100%;height:100%;border-radius:8px;}
+.style-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.style-btn{padding:10px 8px;border-radius:10px;border:0.5px solid #2a2a3a;background:#1a1a24;color:#aaa;cursor:pointer;text-align:center;font-size:11px;transition:all 0.15s;}
+.style-btn svg{display:block;margin:0 auto 5px;}
+.style-btn:hover{border-color:#7c3aed;color:#c4b5fd;}
+.style-btn.active{border-color:#7c3aed;background:#1e1040;color:#c4b5fd;}
+.ec-row{display:flex;gap:6px;}
+.ec-btn{flex:1;padding:7px;text-align:center;border-radius:8px;border:0.5px solid #2a2a3a;background:#1a1a24;color:#666;font-size:11px;cursor:pointer;transition:all 0.15s;}
+.ec-btn.active{border-color:#7c3aed;background:#1e1040;color:#c4b5fd;}
+.logo-upload{border:0.5px dashed #2a2a3a;border-radius:10px;padding:14px;text-align:center;cursor:pointer;transition:border-color 0.15s;position:relative;}
+.logo-upload:hover{border-color:#7c3aed;}
+.logo-upload input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.logo-upload i{font-size:22px;color:#444;display:block;margin-bottom:4px;}
+.logo-upload span{font-size:11px;color:#555;}
+.toggle{width:34px;height:18px;background:#2a2a3a;border-radius:18px;position:relative;cursor:pointer;transition:background 0.2s;flex-shrink:0;}
+.toggle.on{background:#7c3aed;}
+.toggle::after{content:'';position:absolute;width:12px;height:12px;background:#fff;border-radius:50%;top:3px;left:3px;transition:left 0.2s;}
+.toggle.on::after{left:19px;}
+.qr-wrapper{background:#fff;border-radius:16px;padding:18px;}
+.frame-label{margin-top:10px;font-size:13px;font-weight:600;color:#222;text-align:center;}
+.action-row{display:flex;gap:8px;width:100%;}
+.presets{display:flex;gap:6px;flex-wrap:wrap;}
+.preset{width:26px;height:26px;border-radius:6px;cursor:pointer;border:1px solid transparent;}
+.preset:hover{border-color:#fff;}
+.dyn-layout{display:grid;grid-template-columns:340px 1fr;flex:1;overflow:hidden;}
+.dyn-sidebar{border-right:0.5px solid #1e1e2e;overflow-y:auto;display:flex;flex-direction:column;}
+.search-wrap{padding:12px 14px;border-bottom:0.5px solid #1e1e2e;position:relative;}
+.search-wrap i.search-icon{position:absolute;left:26px;top:50%;transform:translateY(-50%);color:#444;font-size:16px;}
+.search-input{width:100%;padding:9px 12px 9px 36px;background:#1a1a24;border:0.5px solid #2a2a3a;border-radius:9px;color:#e8e8f0;font-size:13px;outline:none;}
+.search-input:focus{border-color:#7c3aed;}
+.qr-list-item{padding:14px;border-bottom:0.5px solid #141420;cursor:pointer;display:flex;align-items:center;gap:10px;transition:background 0.12s;}
+.qr-list-item:hover{background:#141420;}
+.qr-list-item.active{background:#1a1035;border-left:2px solid #7c3aed;}
+.qr-thumb{width:40px;height:40px;background:#fff;border-radius:7px;flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;}
+.qr-item-info{flex:1;min-width:0;}
+.qr-item-name{font-size:12px;font-weight:500;color:#e8e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.qr-item-url{font-size:11px;color:#555;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px;}
+.pill{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:8px;font-size:10px;font-weight:500;}
+.pill-active{background:#062a12;color:#34d399;}
+.pill-paused{background:#2a1a00;color:#f59e0b;}
+.url-editor-box{background:#1a1a24;border:0.5px solid #2a2a3a;border-radius:14px;padding:20px;margin-bottom:20px;}
+.url-current-row{display:flex;align-items:center;gap:10px;padding:12px 14px;background:#141420;border-radius:10px;border:0.5px solid #2a2a3a;margin-bottom:12px;}
+.url-current-row i{font-size:18px;color:#34d399;flex-shrink:0;}
+.url-current-row span{font-size:13px;color:#aaa;flex:1;word-break:break-all;}
+.url-new-row{display:flex;gap:8px;}
+.url-new-row input{flex:1;padding:9px 12px;background:#0f0f13;border:0.5px solid #3a2a6a;border-radius:9px;color:#e8e8f0;font-size:13px;outline:none;}
+.url-new-row input:focus{border-color:#7c3aed;}
+.log-item{padding:12px 14px;border-bottom:0.5px solid #1a1a24;display:flex;align-items:center;gap:10px;}
+.log-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.log-dot-on{background:#34d399;}
+.log-dot-off{background:#2a2a4a;}
+.log-url{font-size:12px;color:#aaa;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.log-date{font-size:11px;color:#555;margin-top:2px;display:flex;align-items:center;gap:3px;}
+.analytics-body{padding:24px 32px;flex:1;overflow-y:auto;}
+.metrics-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px;}
+.metric-card{background:#1a1a24;border:0.5px solid #2a2a3a;border-radius:12px;padding:16px 18px;}
+.metric-card-label{font-size:11px;color:#555;margin-bottom:6px;display:flex;align-items:center;gap:5px;}
+.metric-card-label i{font-size:14px;}
+.metric-card-val{font-size:26px;font-weight:700;color:#fff;}
+.metric-card-sub{font-size:11px;margin-top:4px;}
+.up{color:#34d399;}.down{color:#f87171;}
+.charts-grid{display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:16px;}
+.chart-card{background:#1a1a24;border:0.5px solid #2a2a3a;border-radius:14px;padding:20px;}
+.chart-card-title{font-size:12px;font-weight:500;color:#888;margin-bottom:14px;display:flex;align-items:center;gap:7px;}
+.chart-card-title i{font-size:16px;color:#7c3aed;}
+.loc-item{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.loc-name{font-size:12px;color:#aaa;width:100px;flex-shrink:0;}
+.loc-bar-wrap{flex:1;height:5px;background:#2a2a3a;border-radius:3px;overflow:hidden;}
+.loc-bar{height:100%;border-radius:3px;background:#7c3aed;}
+.loc-pct{font-size:11px;color:#555;width:32px;text-align:right;}
+.hour-grid{display:grid;grid-template-columns:repeat(24,1fr);gap:2px;margin-top:4px;}
+.hour-cell{height:24px;border-radius:3px;}
+.hour-labels{display:grid;grid-template-columns:repeat(24,1fr);gap:2px;margin-top:3px;}
+.hour-lbl{font-size:9px;color:#444;text-align:center;}
+.range-tabs{display:flex;gap:4px;}
+.rtab{padding:5px 13px;border-radius:8px;border:0.5px solid #2a2a3a;background:#1a1a24;color:#666;font-size:12px;cursor:pointer;transition:all 0.15s;}
+.rtab.active{background:#1e1040;border-color:#7c3aed;color:#c4b5fd;}
+.section-head{font-size:11px;font-weight:700;color:#444;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+.section-head i{font-size:13px;color:#7c3aed;}
+.empty-dyn{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:12px;color:#333;}
+.empty-dyn i{font-size:52px;color:#1e1e2e;}
+.empty-dyn p{font-size:13px;color:#444;text-align:center;max-width:240px;line-height:1.6;}
+.toast{position:fixed;bottom:24px;right:24px;background:#1e1040;border:0.5px solid #7c3aed;border-radius:12px;padding:12px 18px;display:flex;align-items:center;gap:10px;font-size:13px;color:#c4b5fd;transform:translateY(80px);opacity:0;transition:all 0.3s;z-index:100;}
+.toast.show{transform:translateY(0);opacity:1;}
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:50;align-items:center;justify-content:center;}
+.modal-bg.open{display:flex;}
+.modal{background:#1a1a24;border:0.5px solid #2a2a3a;border-radius:16px;padding:28px;width:440px;}
+.modal h2{font-size:17px;font-weight:600;color:#fff;margin-bottom:20px;display:flex;align-items:center;gap:8px;}
+.modal h2 i{color:#7c3aed;font-size:20px;}
+.modal-actions{display:flex;gap:8px;margin-top:20px;justify-content:flex-end;}
+.btn-cancel{padding:9px 16px;border-radius:9px;border:0.5px solid #2a2a3a;background:transparent;color:#666;font-size:13px;cursor:pointer;}
+.btn-cancel:hover{color:#e8e8f0;}
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+  <div class="brand">
+    <div class="brand-logo"><i class="ti ti-qrcode"></i></div>
+    <div class="brand-name">Kura<span>ti</span></div>
+  </div>
+  <nav>
+    <div class="nav-section">General</div>
+    <button class="nav-item active" onclick="goTo('home')"><i class="ti ti-home"></i> Inicio</button>
+    <button class="nav-item" onclick="goTo('generator')"><i class="ti ti-qrcode"></i> Generador</button>
+    <div class="nav-section">Avanzado</div>
+    <button class="nav-item" onclick="goTo('dynamic')"><i class="ti ti-refresh"></i> QRs Dinámicos <span class="badge-count">4</span></button>
+    <button class="nav-item" onclick="goTo('analytics')"><i class="ti ti-chart-bar"></i> Analíticas</button>
+    <button class="nav-item" onclick="goTo('batch')"><i class="ti ti-table-import"></i> Lote CSV</button>
+    <div class="nav-section">Cuenta</div>
+    <button class="nav-item" onclick="goTo('settings')"><i class="ti ti-settings"></i> Configuración</button>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-card">
+      <div class="avatar">JG</div>
+      <div class="user-info">
+        <div class="user-name">Juan García</div>
+        <div class="user-plan"><i class="ti ti-crown" style="font-size:10px;margin-right:2px;"></i>Pro Plan</div>
+      </div>
+      <i class="ti ti-dots-vertical" style="color:#444;font-size:16px;"></i>
+    </div>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- HOME -->
+  <div class="page active" id="page-home">
+    <div class="home-hero">
+      <div class="hero-badge"><i class="ti ti-sparkles" style="font-size:14px;"></i> Plataforma profesional de QR</div>
+      <div class="hero-title">Bienvenido a <span>Kurati QRs</span></div>
+      <div class="hero-sub">Crea, personaliza y gestiona códigos QR inteligentes. Cambia destinos al instante, mide cada escaneo y escala sin límites.</div>
+      <div class="hero-actions">
+        <button class="btn btn-primary btn-hero" onclick="goTo('generator')"><i class="ti ti-plus"></i> Crear nuevo QR</button>
+        <button class="btn btn-hero" onclick="goTo('analytics')"><i class="ti ti-chart-bar"></i> Ver analíticas</button>
+      </div>
+    </div>
+    <div class="home-stats">
+      <div class="stat-mini"><div class="stat-mini-label"><i class="ti ti-scan" style="color:#7c3aed;"></i> Total escaneos</div><div class="stat-mini-val">12,847</div><div class="stat-mini-sub">▲ 18% este mes</div></div>
+      <div class="stat-mini"><div class="stat-mini-label"><i class="ti ti-qrcode" style="color:#34d399;"></i> QRs activos</div><div class="stat-mini-val">4</div><div class="stat-mini-sub" style="color:#34d399;">Todos funcionando</div></div>
+      <div class="stat-mini"><div class="stat-mini-label"><i class="ti ti-users" style="color:#f59e0b;"></i> Únicos hoy</div><div class="stat-mini-val">314</div><div class="stat-mini-sub">▲ 9% vs ayer</div></div>
+      <div class="stat-mini"><div class="stat-mini-label"><i class="ti ti-refresh" style="color:#ec4899;"></i> Dinámicos</div><div class="stat-mini-val">4</div><div class="stat-mini-sub" style="color:#ec4899;">Listos para editar</div></div>
+    </div>
+    <div class="home-cards">
+      <div class="home-card" onclick="goTo('generator')"><div class="card-icon" style="background:#1e1040;"><i class="ti ti-qrcode" style="color:#7c3aed;"></i></div><div class="card-title">Generador de QR</div><div class="card-desc">URL, WhatsApp, Email, WiFi, vCard, SMS y más. Personaliza colores, estilos y logo al instante.</div><i class="ti ti-arrow-right card-arrow"></i></div>
+      <div class="home-card" onclick="goTo('dynamic')"><div class="card-icon" style="background:#062a12;"><i class="ti ti-refresh" style="color:#34d399;"></i></div><div class="card-title">QRs Dinámicos</div><div class="card-desc">Cambia el destino de cualquier QR sin reimprimirlo. Perfecto para campañas, menús y más.</div><i class="ti ti-arrow-right card-arrow"></i></div>
+      <div class="home-card" onclick="goTo('analytics')"><div class="card-icon" style="background:#2a1e00;"><i class="ti ti-chart-bar" style="color:#f59e0b;"></i></div><div class="card-title">Analíticas</div><div class="card-desc">Escaneos por día, ubicaciones, dispositivos y horas pico. Todo en tiempo real.</div><i class="ti ti-arrow-right card-arrow"></i></div>
+      <div class="home-card" onclick="goTo('batch')"><div class="card-icon" style="background:#0a1e3d;"><i class="ti ti-table-import" style="color:#60a5fa;"></i></div><div class="card-title">Generación en Lote</div><div class="card-desc">Sube un CSV y genera cientos de QRs en segundos. Descarga todo en un ZIP.</div><i class="ti ti-arrow-right card-arrow"></i></div>
+      <div class="home-card" onclick="goTo('settings')"><div class="card-icon" style="background:#2a1a00;"><i class="ti ti-settings" style="color:#fb923c;"></i></div><div class="card-title">Configuración</div><div class="card-desc">Gestiona tu cuenta, plan, marca blanca y preferencias de la plataforma.</div><i class="ti ti-arrow-right card-arrow"></i></div>
+      <div class="home-card" style="background:linear-gradient(135deg,#1e1040,#2a1a5a);border-color:#7c3aed;"><div class="card-icon" style="background:rgba(124,58,237,0.2);"><i class="ti ti-crown" style="color:#c4b5fd;"></i></div><div class="card-title" style="color:#c4b5fd;">Plan Pro Activo</div><div class="card-desc" style="color:#7c3aed;">QRs ilimitados · Analíticas avanzadas · Marca blanca · Soporte prioritario</div><i class="ti ti-arrow-right card-arrow" style="color:#7c3aed;"></i></div>
+    </div>
+  </div>
+
+  <!-- GENERATOR -->
+  <div class="page" id="page-generator">
+    <div class="topbar">
+      <div><div style="font-size:17px;font-weight:600;color:#fff;">Generador de QR</div><div style="font-size:13px;color:#555;margin-top:1px;">Personaliza y descarga tu código QR</div></div>
+      <div class="topbar-actions">
+        <button class="btn" onclick="downloadQR('png')"><i class="ti ti-download"></i> PNG</button>
+        <button class="btn btn-primary" onclick="downloadQR('svg')"><i class="ti ti-file-vector"></i> SVG</button>
+      </div>
+    </div>
+    <div class="gen-layout">
+      <div class="gen-left">
+        <div class="section">
+          <div class="section-label"><i class="ti ti-category"></i> Tipo de contenido</div>
+          <div class="type-grid">
+            <button class="type-btn active" onclick="setType('url',this)"><i class="ti ti-link" style="color:#7c3aed;"></i>URL</button>
+            <button class="type-btn" onclick="setType('whatsapp',this)"><i class="ti ti-brand-whatsapp" style="color:#25D366;"></i>WhatsApp</button>
+            <button class="type-btn" onclick="setType('email',this)"><i class="ti ti-mail" style="color:#60a5fa;"></i>Email</button>
+            <button class="type-btn" onclick="setType('phone',this)"><i class="ti ti-phone" style="color:#34d399;"></i>Teléfono</button>
+            <button class="type-btn" onclick="setType('wifi',this)"><i class="ti ti-wifi" style="color:#f59e0b;"></i>WiFi</button>
+            <button class="type-btn" onclick="setType('vcard',this)"><i class="ti ti-id-badge" style="color:#ec4899;"></i>vCard</button>
+            <button class="type-btn" onclick="setType('sms',this)"><i class="ti ti-message" style="color:#a78bfa;"></i>SMS</button>
+            <button class="type-btn" onclick="setType('text',this)"><i class="ti ti-text-size" style="color:#94a3b8;"></i>Texto</button>
+          </div>
+        </div>
+        <div class="section"><div class="section-label"><i class="ti ti-forms"></i> Contenido</div><div id="genFields" class="field-group"></div></div>
+        <div class="section">
+          <div class="section-label"><i class="ti ti-palette"></i> Colores</div>
+          <div style="display:flex;gap:16px;align-items:flex-start;">
+            <div><label>Puntos</label><div class="color-swatch"><div class="color-preview" id="dot-prev" style="background:#000;"></div><input type="color" id="dotColor" value="#000000" oninput="syncColor('dot');genQR();"></div></div>
+            <div><label>Fondo</label><div class="color-swatch"><div class="color-preview" id="bg-prev" style="background:#fff;"></div><input type="color" id="bgColor" value="#ffffff" oninput="syncColor('bg');genQR();"></div></div>
+            <div style="flex:1;"><label>Presets</label><div class="presets">
+              <div class="preset" style="background:#000;" onclick="applyPreset('#000','#fff')"></div>
+              <div class="preset" style="background:#7c3aed;" onclick="applyPreset('#7c3aed','#f5f0ff')"></div>
+              <div class="preset" style="background:#0f766e;" onclick="applyPreset('#0f766e','#f0fdf9')"></div>
+              <div class="preset" style="background:#c2410c;" onclick="applyPreset('#c2410c','#fff7ed')"></div>
+              <div class="preset" style="background:#1d4ed8;" onclick="applyPreset('#1d4ed8','#eff6ff')"></div>
+              <div class="preset" style="background:#be185d;" onclick="applyPreset('#be185d','#fdf2f8')"></div>
+            </div></div>
+          </div>
+        </div>
+        <div class="section">
+          <div class="section-label"><i class="ti ti-shape"></i> Estilo de puntos</div>
+          <div class="style-grid">
+            <button class="style-btn active" onclick="setStyle('square',this)"><svg width="28" height="28" viewBox="0 0 28 28"><rect x="3" y="3" width="9" height="9" rx="0" fill="currentColor"/><rect x="16" y="3" width="9" height="9" rx="0" fill="currentColor"/><rect x="3" y="16" width="9" height="9" rx="0" fill="currentColor"/><rect x="16" y="16" width="4" height="4" rx="0" fill="currentColor"/></svg>Cuadrado</button>
+            <button class="style-btn" onclick="setStyle('rounded',this)"><svg width="28" height="28" viewBox="0 0 28 28"><rect x="3" y="3" width="9" height="9" rx="3" fill="currentColor"/><rect x="16" y="3" width="9" height="9" rx="3" fill="currentColor"/><rect x="3" y="16" width="9" height="9" rx="3" fill="currentColor"/><rect x="16" y="16" width="4" height="4" rx="2" fill="currentColor"/></svg>Redondeado</button>
+            <button class="style-btn" onclick="setStyle('dots',this)"><svg width="28" height="28" viewBox="0 0 28 28"><circle cx="7.5" cy="7.5" r="4.5" fill="currentColor"/><circle cx="20.5" cy="7.5" r="4.5" fill="currentColor"/><circle cx="7.5" cy="20.5" r="4.5" fill="currentColor"/><circle cx="20.5" cy="20.5" r="2" fill="currentColor"/></svg>Circular</button>
+          </div>
+        </div>
+        <div class="section">
+          <div class="section-label"><i class="ti ti-photo"></i> Logo central</div>
+          <div class="logo-upload"><input type="file" accept="image/*" onchange="handleLogo(event)"><div id="logoContent"><i class="ti ti-photo-up"></i><span>Arrastra o haz clic para subir imagen</span></div></div>
+        </div>
+        <div class="section">
+          <div class="section-label"><i class="ti ti-text-caption"></i> Marco con texto</div>
+          <div style="display:flex;align-items:center;gap:10px;"><div class="toggle" id="frameToggle" onclick="toggleFrame()"></div><span style="font-size:12px;color:#666;">Mostrar texto bajo el QR</span></div>
+          <div id="frameInput" style="display:none;margin-top:8px;"><input type="text" id="frameText" placeholder="Escanéame · Visítanos..." oninput="genQR()" maxlength="40"></div>
+        </div>
+        <div class="section">
+          <div class="section-label"><i class="ti ti-shield-check"></i> Corrección de error</div>
+          <div class="ec-row">
+            <button class="ec-btn" onclick="setEC('L',this)">L — Bajo</button>
+            <button class="ec-btn active" onclick="setEC('M',this)">M — Medio</button>
+            <button class="ec-btn" onclick="setEC('Q',this)">Q — Alto</button>
+            <button class="ec-btn" onclick="setEC('H',this)">H — Máximo</button>
+          </div>
+        </div>
+      </div>
+      <div class="gen-right">
+        <div style="font-size:11px;color:#444;text-transform:uppercase;letter-spacing:0.08em;align-self:flex-start;display:flex;align-items:center;gap:5px;"><i class="ti ti-eye" style="font-size:14px;color:#7c3aed;"></i> Vista previa</div>
+        <div class="qr-wrapper"><div id="genQRcode"></div><div class="frame-label" id="genFrameLabel" style="display:none;"></div></div>
+        <div class="action-row">
+          <button class="btn" onclick="downloadQR('png')"><i class="ti ti-download"></i> PNG</button>
+          <button class="btn" onclick="downloadQR('svg')"><i class="ti ti-file-vector"></i> SVG</button>
+          <button class="btn" onclick="copyQR()"><i class="ti ti-copy"></i></button>
+        </div>
+        <div style="width:100%;border-top:0.5px solid #1e1e2e;padding-top:14px;">
+          <div style="font-size:11px;color:#444;margin-bottom:10px;display:flex;align-items:center;gap:5px;"><i class="ti ti-history" style="font-size:14px;color:#7c3aed;"></i> Historial</div>
+          <div id="genHistory"><div style="font-size:12px;color:#333;text-align:center;padding:12px;">Los QRs generados aparecerán aquí</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DYNAMIC -->
+  <div class="page" id="page-dynamic">
+    <div class="topbar">
+      <div><div style="font-size:17px;font-weight:600;color:#fff;">QRs Dinámicos</div><div style="font-size:13px;color:#555;margin-top:1px;">Cambia el destino sin regenerar el QR físico</div></div>
+      <div class="topbar-actions"><button class="btn btn-primary" onclick="openDynModal()"><i class="ti ti-plus"></i> Nuevo QR dinámico</button></div>
+    </div>
+    <div class="dyn-layout">
+      <div class="dyn-sidebar">
+        <div class="search-wrap"><i class="ti ti-search search-icon"></i><input class="search-input" placeholder="Buscar QRs..." oninput="filterDyn(this.value)"></div>
+        <div id="dynList"></div>
+      </div>
+      <div id="dynMain" style="overflow-y:auto;padding:24px 28px;display:flex;flex-direction:column;">
+        <div class="empty-dyn" style="flex:1;"><i class="ti ti-qrcode-off"></i><p>Selecciona un QR de la lista o crea uno nuevo para gestionar su destino.</p></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ANALYTICS -->
+  <div class="page" id="page-analytics">
+    <div class="topbar">
+      <div><div style="font-size:17px;font-weight:600;color:#fff;">Analíticas</div><div style="font-size:13px;color:#555;margin-top:1px;">Rendimiento de todos tus QRs</div></div>
+      <div class="topbar-actions">
+        <div class="range-tabs">
+          <button class="rtab" onclick="setRange(7,this)">7d</button>
+          <button class="rtab active" onclick="setRange(30,this)">30d</button>
+          <button class="rtab" onclick="setRange(90,this)">90d</button>
+          <button class="rtab" onclick="setRange(365,this)">1 año</button>
+        </div>
+        <button class="btn"><i class="ti ti-download"></i> Exportar</button>
+      </div>
+    </div>
+    <div class="analytics-body">
+      <div class="metrics-grid">
+        <div class="metric-card"><div class="metric-card-label"><i class="ti ti-scan" style="color:#7c3aed;"></i> Total escaneos</div><div class="metric-card-val">12,847</div><div class="metric-card-sub up">▲ 18% vs anterior</div></div>
+        <div class="metric-card"><div class="metric-card-label"><i class="ti ti-users" style="color:#34d399;"></i> Únicos</div><div class="metric-card-val">9,214</div><div class="metric-card-sub up">▲ 12% vs anterior</div></div>
+        <div class="metric-card"><div class="metric-card-label"><i class="ti ti-calendar-stats" style="color:#f59e0b;"></i> Promedio diario</div><div class="metric-card-val">428</div><div class="metric-card-sub down">▼ 3% vs anterior</div></div>
+        <div class="metric-card"><div class="metric-card-label"><i class="ti ti-device-mobile" style="color:#ec4899;"></i> % Móvil</div><div class="metric-card-val">62%</div><div class="metric-card-sub up">▲ 5% vs anterior</div></div>
+      </div>
+      <div class="charts-grid">
+        <div class="chart-card"><div class="chart-card-title"><i class="ti ti-trending-up"></i> Escaneos por día</div><div style="height:180px;position:relative;"><canvas id="lineChart"></canvas></div></div>
+        <div class="chart-card">
+          <div class="chart-card-title"><i class="ti ti-device-mobile"></i> Dispositivos</div>
+          <div style="height:120px;position:relative;"><canvas id="donutChart"></canvas></div>
+          <div style="margin-top:10px;">
+            <div style="display:flex;justify-content:space-between;font-size:12px;padding:4px 0;"><span style="color:#aaa;display:flex;align-items:center;gap:5px;"><span style="width:8px;height:8px;background:#7c3aed;border-radius:50%;display:inline-block;"></span>Móvil</span><span style="color:#fff;font-weight:500;">62%</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:12px;padding:4px 0;"><span style="color:#aaa;display:flex;align-items:center;gap:5px;"><span style="width:8px;height:8px;background:#34d399;border-radius:50%;display:inline-block;"></span>Escritorio</span><span style="color:#fff;font-weight:500;">28%</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:12px;padding:4px 0;"><span style="color:#aaa;display:flex;align-items:center;gap:5px;"><span style="width:8px;height:8px;background:#f59e0b;border-radius:50%;display:inline-block;"></span>Tablet</span><span style="color:#fff;font-weight:500;">10%</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="charts-grid" style="grid-template-columns:1fr 1fr;">
+        <div class="chart-card"><div class="chart-card-title"><i class="ti ti-map-pin"></i> Ubicaciones principales</div><div id="locList"></div></div>
+        <div class="chart-card"><div class="chart-card-title"><i class="ti ti-clock-hour-4"></i> Actividad por hora</div><div class="hour-grid" id="hourGrid"></div><div class="hour-labels" id="hourLabels"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BATCH -->
+  <div class="page" id="page-batch">
+    <div class="topbar"><div><div style="font-size:17px;font-weight:600;color:#fff;">Generación en Lote</div><div style="font-size:13px;color:#555;margin-top:1px;">Sube un CSV y genera múltiples QRs de golpe</div></div></div>
+    <div style="padding:32px;flex:1;overflow-y:auto;">
+      <div style="max-width:600px;">
+        <div style="background:#1a1a24;border:0.5px solid #2a2a3a;border-radius:16px;padding:28px;margin-bottom:20px;">
+          <div class="section-head"><i class="ti ti-file-upload"></i> Subir archivo CSV</div>
+          <div style="border:0.5px dashed #2a2a3a;border-radius:12px;padding:36px;text-align:center;cursor:pointer;position:relative;transition:border-color 0.15s;" onmouseenter="this.style.borderColor='#7c3aed'" onmouseleave="this.style.borderColor='#2a2a3a'">
+            <input type="file" accept=".csv" style="position:absolute;inset:0;opacity:0;cursor:pointer;" onchange="handleCSV(event)">
+            <i class="ti ti-table-import" style="font-size:40px;color:#3a3a5a;display:block;margin-bottom:10px;"></i>
+            <div style="font-size:14px;color:#666;margin-bottom:6px;">Arrastra tu CSV aquí o haz clic</div>
+            <div style="font-size:12px;color:#444;">Columnas: <code style="background:#0f0f13;padding:2px 6px;border-radius:4px;color:#a78bfa;">nombre</code>, <code style="background:#0f0f13;padding:2px 6px;border-radius:4px;color:#a78bfa;">url</code></div>
+          </div>
+        </div>
+        <div style="background:#1a1a24;border:0.5px solid #2a2a3a;border-radius:16px;padding:24px;margin-bottom:20px;">
+          <div class="section-head"><i class="ti ti-file-text"></i> Formato de ejemplo</div>
+          <div style="background:#0f0f13;border-radius:10px;padding:14px;font-size:12px;color:#a78bfa;font-family:monospace;line-height:1.8;">nombre,url<br>Producto A,https://tienda.co/a<br>Sucursal Norte,https://maps.google.com/abc<br>WhatsApp Ventas,https://wa.me/573001234567</div>
+          <button class="btn" style="margin-top:14px;" onclick="downloadTemplate()"><i class="ti ti-download"></i> Descargar plantilla</button>
+        </div>
+        <div id="batchResult" style="display:none;background:#1a1a24;border:0.5px solid #2a2a3a;border-radius:16px;padding:24px;">
+          <div class="section-head"><i class="ti ti-check-circle"></i> QRs generados</div>
+          <div id="batchGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:4px;"></div>
+          <button class="btn btn-primary" style="margin-top:16px;width:100%;" onclick="showToast('Descargando ZIP...')"><i class="ti ti-file-zip"></i> Descargar todo en ZIP</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SETTINGS -->
+  <div class="page" id="page-settings">
+    <div class="topbar">
+      <div><div style="font-size:17px;font-weight:600;color:#fff;">Configuración</div><div style="font-size:13px;color:#555;margin-top:1px;">Gestiona tu cuenta y preferencias</div></div>
+      <button class="btn btn-primary" onclick="showToast('Cambios guardados correctamente')"><i class="ti ti-device-floppy"></i> Guardar cambios</button>
+    </div>
+    <div style="padding:28px 32px;overflow-y:auto;flex:1;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:860px;">
+        <div style="background:#1a1a24;border:0.5px solid #2a2a3a;border-radius:16px;padding:22px;">
+          <div class="section-head"><i class="ti ti-user-circle"></i> Perfil</div>
+          <div style="display:flex;flex-direction:column;gap:12px;">
+            <div><label>Nombre</label><input type="text" value="Juan García"></div>
+            <div><label>Email</label><input type="email" value="juan@empresa.com"></div>
+            <div><label>Empresa</label><input type="text" value="Mi Empresa S.A.S"></div>
+            <div><label>Sitio web</label><input type="url" value="https://miempresa.com"></div>
+          </div>
+        </div>
+        <div style="background:#1a1a24;border:0.5px solid #2a2a3a;border-radius:16px;padding:22px;">
+          <div class="section-head"><i class="ti ti-crown"></i> Plan actual</div>
+          <div style="background:linear-gradient(135deg,#1e1040,#2a1a5a);border-radius:12px;padding:16px;margin-bottom:14px;">
+            <div style="font-size:14px;font-weight:600;color:#c4b5fd;margin-bottom:4px;"><i class="ti ti-crown" style="margin-right:5px;"></i>Pro Plan</div>
+            <div style="font-size:12px;color:#7c3aed;">QRs ilimitados · Analíticas · Marca blanca</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px;font-size:13px;">
+            <div style="display:flex;align-items:center;gap:8px;color:#aaa;"><i class="ti ti-check" style="color:#34d399;"></i> QRs dinámicos ilimitados</div>
+            <div style="display:flex;align-items:center;gap:8px;color:#aaa;"><i class="ti ti-check" style="color:#34d399;"></i> Analíticas avanzadas</div>
+            <div style="display:flex;align-items:center;gap:8px;color:#aaa;"><i class="ti ti-check" style="color:#34d399;"></i> Generación en lote</div>
+            <div style="display:flex;align-items:center;gap:8px;color:#aaa;"><i class="ti ti-check" style="color:#34d399;"></i> Soporte prioritario</div>
+          </div>
+        </div>
+        <div style="background:#1a1a24;border:0.5px solid #2a2a3a;border-radius:16px;padding:22px;">
+          <div class="section-head"><i class="ti ti-palette"></i> Marca blanca</div>
+          <div style="display:flex;flex-direction:column;gap:12px;">
+            <div><label>Nombre de la plataforma</label><input type="text" value="Kurati QRs"></div>
+            <div><label>Color principal</label><input type="color" value="#7c3aed" style="width:60px;height:36px;border-radius:8px;border:0.5px solid #2a2a3a;background:#1a1a24;cursor:pointer;padding:2px;"></div>
+            <div><label>Dominio personalizado</label><input type="text" placeholder="qr.tuempresa.com"></div>
+          </div>
+        </div>
+        <div style="background:#1a1a24;border:0.5px solid #2a2a3a;border-radius:16px;padding:22px;">
+          <div class="section-head"><i class="ti ti-key"></i> API & Seguridad</div>
+          <div style="display:flex;flex-direction:column;gap:12px;">
+            <div><label>API Key</label>
+              <div style="display:flex;gap:6px;">
+                <input type="password" value="sk-kurati-xxxxxxxxxxxxxxxxxxxx" id="apiKeyField" style="flex:1;">
+                <button class="btn" style="padding:9px 12px;" onclick="toggleApiKey()"><i class="ti ti-eye" id="apiKeyIcon"></i></button>
+              </div>
+            </div>
+            <button class="btn" style="width:100%;"><i class="ti ti-refresh"></i> Regenerar API Key</button>
+            <button class="btn" style="width:100%;border-color:#4a1a1a;color:#f87171;" onclick="showToast('Sesiones cerradas en todos los dispositivos')"><i class="ti ti-logout"></i> Cerrar todas las sesiones</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Modal QR dinámico -->
+<div class="modal-bg" id="dynModal">
+  <div class="modal">
+    <h2><i class="ti ti-plus-circle"></i> Nuevo QR Dinámico</h2>
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <div><label>Nombre</label><input type="text" id="newDynName" placeholder="Ej: Menú, Landing..."></div>
+      <div><label>URL inicial</label><input type="url" id="newDynUrl" placeholder="https://..."></div>
+      <div><label>Categoría</label>
+        <select id="newDynCat">
+          <option value="marketing">📢 Marketing</option>
+          <option value="menu">🍽️ Menú / Carta</option>
+          <option value="soporte">💬 Soporte</option>
+          <option value="producto">📦 Producto</option>
+          <option value="evento">🎟️ Evento</option>
+          <option value="otro">📁 Otro</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeDynModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="createDynQR()"><i class="ti ti-check"></i> Crear QR</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><i class="ti ti-circle-check"></i><span id="toastMsg">Listo</span></div>
+
+<script>
+function goTo(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  const map={home:'inicio',generator:'generador',dynamic:'dinámicos',analytics:'analíticas',batch:'lote',settings:'configuración'};
+  document.querySelectorAll('.nav-item').forEach(n=>{if(n.textContent.toLowerCase().includes(map[id]||id))n.classList.add('active');});
+  if(id==='analytics')initAnalytics();
+  if(id==='dynamic')renderDynList();
+}
+function showToast(msg){const t=document.getElementById('toast');document.getElementById('toastMsg').textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000);}
+
+// GENERATOR
+let gType='url',gStyle='square',gEC='M',gLogo=null,gFrame=false;
+const fieldDefs={
+  url:[{id:'g_url',label:'URL',placeholder:'https://...',type:'url'}],
+  whatsapp:[{id:'g_wa_p',label:'Número (con código de país)',placeholder:'+573001234567',type:'tel'},{id:'g_wa_m',label:'Mensaje predefinido',placeholder:'Hola!',type:'textarea'}],
+  email:[{id:'g_em_t',label:'Destinatario',placeholder:'correo@ejemplo.com',type:'email'},{id:'g_em_s',label:'Asunto',placeholder:'Asunto',type:'text'},{id:'g_em_b',label:'Mensaje',placeholder:'...',type:'textarea'}],
+  phone:[{id:'g_ph',label:'Teléfono',placeholder:'+573001234567',type:'tel'}],
+  wifi:[{id:'g_wf_s',label:'SSID',placeholder:'NombreRed',type:'text'},{id:'g_wf_p',label:'Contraseña',placeholder:'contraseña',type:'password'},{id:'g_wf_e',label:'Seguridad',type:'select',options:['WPA','WEP','nopass']}],
+  vcard:[{id:'g_vc_n',label:'Nombre',placeholder:'Juan García',type:'text'},{id:'g_vc_p',label:'Teléfono',placeholder:'+573001234567',type:'tel'},{id:'g_vc_e',label:'Email',placeholder:'juan@email.com',type:'email'},{id:'g_vc_o',label:'Empresa',placeholder:'Mi Empresa',type:'text'}],
+  sms:[{id:'g_sm_p',label:'Número',placeholder:'+573001234567',type:'tel'},{id:'g_sm_m',label:'Mensaje',placeholder:'...',type:'textarea'}],
+  text:[{id:'g_tx',label:'Texto libre',placeholder:'Escribe cualquier texto...',type:'textarea'}]
+};
+function fv(id){const e=document.getElementById(id);return e?e.value.trim():'';}
+function buildContent(){
+  switch(gType){
+    case'url':return fv('g_url')||'https://kuratiqrs.com';
+    case'whatsapp':return`https://wa.me/${fv('g_wa_p').replace(/\D/g,'')}${fv('g_wa_m')?'?text='+encodeURIComponent(fv('g_wa_m')):''}`;
+    case'email':return`mailto:${fv('g_em_t')}?subject=${encodeURIComponent(fv('g_em_s'))}&body=${encodeURIComponent(fv('g_em_b'))}`;
+    case'phone':return`tel:${fv('g_ph')}`;
+    case'wifi':return`WIFI:T:${fv('g_wf_e')||'WPA'};S:${fv('g_wf_s')};P:${fv('g_wf_p')};;`;
+    case'vcard':return`BEGIN:VCARD\nVERSION:3.0\nFN:${fv('g_vc_n')}\nTEL:${fv('g_vc_p')}\nEMAIL:${fv('g_vc_e')}\nORG:${fv('g_vc_o')}\nEND:VCARD`;
+    case'sms':return`sms:${fv('g_sm_p')}?body=${encodeURIComponent(fv('g_sm_m'))}`;
+    default:return fv('g_tx')||'Texto de ejemplo';
+  }
+}
+function setType(t,el){gType=t;document.querySelectorAll('.type-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');renderGenFields();genQR();}
+function renderGenFields(){
+  const c=document.getElementById('genFields');c.innerHTML='';
+  (fieldDefs[gType]||[]).forEach(f=>{
+    const w=document.createElement('div');
+    const l=document.createElement('label');l.textContent=f.label;w.appendChild(l);
+    let el;
+    if(f.type==='textarea'){el=document.createElement('textarea');el.placeholder=f.placeholder||'';}
+    else if(f.type==='select'){el=document.createElement('select');(f.options||[]).forEach(o=>{const op=document.createElement('option');op.value=o;op.textContent=o;el.appendChild(op);});}
+    else{el=document.createElement('input');el.type=f.type;el.placeholder=f.placeholder||'';}
+    el.id=f.id;el.addEventListener('input',genQR);w.appendChild(el);c.appendChild(w);
+  });
+}
+function setStyle(s,el){gStyle=s;document.querySelectorAll('.style-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');genQR();}
+function setEC(ec,el){gEC=ec;document.querySelectorAll('.ec-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');genQR();}
+function syncColor(t){document.getElementById(t==='dot'?'dot-prev':'bg-prev').style.background=document.getElementById(t==='dot'?'dotColor':'bgColor').value;}
+function applyPreset(dot,bg){document.getElementById('dotColor').value=dot;document.getElementById('bgColor').value=bg;syncColor('dot');syncColor('bg');genQR();}
+function toggleFrame(){gFrame=!gFrame;document.getElementById('frameToggle').classList.toggle('on',gFrame);document.getElementById('frameInput').style.display=gFrame?'block':'none';genQR();}
+function handleLogo(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{gLogo=ev.target.result;document.getElementById('logoContent').innerHTML=`<img src="${gLogo}" style="width:48px;height:48px;object-fit:contain;border-radius:8px;">`;genQR();};r.readAsDataURL(f);}
+let genHistArr=[];
+function genQR(){
+  const content=buildContent(),dot=document.getElementById('dotColor').value,bg=document.getElementById('bgColor').value;
+  const ecMap={L:QRCode.CorrectLevel.L,M:QRCode.CorrectLevel.M,Q:QRCode.CorrectLevel.Q,H:QRCode.CorrectLevel.H};
+  const c=document.getElementById('genQRcode');c.innerHTML='';
+  try{new QRCode(c,{text:content,width:200,height:200,colorDark:dot,colorLight:bg,correctLevel:ecMap[gEC]||QRCode.CorrectLevel.M});}catch(e){}
+  setTimeout(()=>{
+    const canvas=c.querySelector('canvas');if(!canvas)return;
+    if(gStyle!=='square')applyQRStyle(canvas,dot,bg);
+    if(gLogo)overlayLogo(canvas);
+    const fl=document.getElementById('genFrameLabel'),ft=gFrame?fv('frameText'):'';
+    fl.textContent=ft;fl.style.display=ft?'block':'none';
+    genHistArr.unshift({type:gType,img:canvas.toDataURL(),content:content.substring(0,40)});
+    if(genHistArr.length>6)genHistArr.pop();renderGenHistory();
+  },120);
+}
+function applyQRStyle(canvas,dot,bg){
+  const ctx=canvas.getContext('2d'),img=ctx.getImageData(0,0,canvas.width,canvas.height);
+  ctx.fillStyle=bg;ctx.fillRect(0,0,canvas.width,canvas.height);
+  const cs=canvas.width/37;
+  for(let r=0;r<37;r++)for(let col=0;col<37;col++){
+    const px=Math.floor((col+.5)*cs),py=Math.floor((r+.5)*cs),idx=(py*canvas.width+px)*4;
+    if(img.data[idx]<128){
+      ctx.fillStyle=dot;const x=col*cs,y=r*cs;
+      if(gStyle==='dots'){ctx.beginPath();ctx.arc(x+cs/2,y+cs/2,cs/2*.85,0,Math.PI*2);ctx.fill();}
+      else{const rv=cs*.3;ctx.beginPath();ctx.moveTo(x+rv,y);ctx.lineTo(x+cs-rv,y);ctx.quadraticCurveTo(x+cs,y,x+cs,y+rv);ctx.lineTo(x+cs,y+cs-rv);ctx.quadraticCurveTo(x+cs,y+cs,x+cs-rv,y+cs);ctx.lineTo(x+rv,y+cs);ctx.quadraticCurveTo(x,y+cs,x,y+cs-rv);ctx.lineTo(x,y+rv);ctx.quadraticCurveTo(x,y,x+rv,y);ctx.closePath();ctx.fill();}
+    }
+  }
+}
+function overlayLogo(canvas){
+  const ctx=canvas.getContext('2d'),sz=canvas.width*.22,lx=(canvas.width-sz)/2,ly=(canvas.height-sz)/2,pad=5;
+  ctx.fillStyle='#fff';ctx.beginPath();ctx.roundRect(lx-pad,ly-pad,sz+pad*2,sz+pad*2,6);ctx.fill();
+  const img=new Image();img.onload=()=>ctx.drawImage(img,lx,ly,sz,sz);img.src=gLogo;
+}
+const tIcons={url:'ti-link',whatsapp:'ti-brand-whatsapp',email:'ti-mail',phone:'ti-phone',wifi:'ti-wifi',vcard:'ti-id-badge',sms:'ti-message',text:'ti-text-size'};
+function renderGenHistory(){
+  const c=document.getElementById('genHistory');
+  if(!genHistArr.length){c.innerHTML='<div style="font-size:12px;color:#333;text-align:center;padding:12px;">Los QRs generados aparecerán aquí</div>';return;}
+  c.innerHTML=genHistArr.map((h,i)=>`<div style="display:flex;align-items:center;gap:8px;padding:8px;background:#141420;border-radius:9px;cursor:pointer;" onclick="downloadHist(${i})"><div style="width:36px;height:36px;background:#fff;border-radius:6px;overflow:hidden;flex-shrink:0;"><img src="${h.img}" style="width:100%;height:100%;"></div><div style="flex:1;min-width:0;"><div style="font-size:11px;color:#7c3aed;"><i class="ti ${tIcons[h.type]||'ti-qrcode'}" style="margin-right:3px;"></i>${h.type.toUpperCase()}</div><div style="font-size:11px;color:#555;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${h.content}</div></div><i class="ti ti-download" style="color:#444;font-size:15px;"></i></div>`).join('');
+}
+function downloadHist(i){const a=document.createElement('a');a.href=genHistArr[i].img;a.download=`qr-${genHistArr[i].type}.png`;a.click();}
+function downloadQR(fmt){
+  const canvas=document.querySelector('#genQRcode canvas');if(!canvas)return;
+  if(fmt==='svg'){const d=canvas.toDataURL(),s=`<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="200" height="200"><image href="${d}" width="200" height="200"/></svg>`,b=new Blob([s],{type:'image/svg+xml'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='kurati-qr.svg';a.click();}
+  else{const a=document.createElement('a');a.href=canvas.toDataURL();a.download='kurati-qr.png';a.click();}
+}
+function copyQR(){const canvas=document.querySelector('#genQRcode canvas');if(!canvas)return;canvas.toBlob(b=>{try{navigator.clipboard.write([new ClipboardItem({'image/png':b})]).then(()=>showToast('QR copiado al portapapeles'));}catch(e){showToast('Copia no soportada en este navegador');}});}
+
+// DYNAMIC QRS
+const catIcon={marketing:'ti-speakerphone',menu:'ti-tools-kitchen-2',soporte:'ti-message-circle',producto:'ti-package',evento:'ti-ticket',otro:'ti-folder'};
+const catColor={marketing:'#7c3aed',menu:'#f59e0b',soporte:'#34d399',producto:'#60a5fa',evento:'#ec4899',otro:'#888'};
+let dynQRs=[
+  {id:1,name:'Landing — Campaña Mayo',cat:'marketing',status:'active',currentUrl:'https://miempresa.com/mayo-2026',history:[{url:'https://miempresa.com/mayo-2026',date:'13 May 2026 09:14',current:true},{url:'https://miempresa.com/abril-2026',date:'01 Abr 2026 08:00'}],scans:4821,today:142,unique:3190},
+  {id:2,name:'Menú Restaurante',cat:'menu',status:'active',currentUrl:'https://restaurante.co/menu-temporada',history:[{url:'https://restaurante.co/menu-temporada',date:'10 May 2026 12:00',current:true}],scans:3240,today:98,unique:2100},
+  {id:3,name:'WhatsApp Soporte',cat:'soporte',status:'active',currentUrl:'https://wa.me/573001234567',history:[{url:'https://wa.me/573001234567',date:'01 Ene 2026',current:true}],scans:2980,today:74,unique:2410},
+  {id:4,name:'Promo Producto X',cat:'producto',status:'paused',currentUrl:'https://tienda.co/producto-x',history:[{url:'https://tienda.co/producto-x',date:'15 Abr 2026',current:true}],scans:1806,today:0,unique:1540},
+];
+let selDyn=null,filteredDyn=[...dynQRs];
+function filterDyn(v){filteredDyn=v?dynQRs.filter(q=>q.name.toLowerCase().includes(v.toLowerCase())||q.currentUrl.toLowerCase().includes(v.toLowerCase())):[...dynQRs];renderDynList();}
+function renderDynList(){
+  const c=document.getElementById('dynList');
+  c.innerHTML=filteredDyn.map(q=>`<div class="qr-list-item ${selDyn===q.id?'active':''}" onclick="selectDyn(${q.id})"><div class="qr-thumb" id="dthumb-${q.id}"></div><div class="qr-item-info"><div class="qr-item-name"><i class="ti ${catIcon[q.cat]}" style="font-size:13px;color:${catColor[q.cat]};margin-right:4px;"></i>${q.name}</div><div class="qr-item-url"><i class="ti ti-link" style="font-size:10px;margin-right:2px;color:#444;"></i>${q.currentUrl}</div><div style="margin-top:4px;display:flex;align-items:center;gap:6px;"><span class="pill pill-${q.status}"><i class="ti ${q.status==='active'?'ti-circle-check':'ti-circle-pause'}" style="font-size:10px;"></i>${q.status==='active'?'Activo':'Pausado'}</span><span style="font-size:10px;color:#444;display:flex;align-items:center;gap:2px;"><i class="ti ti-scan" style="font-size:11px;"></i>${q.scans.toLocaleString('es-CO')}</span></div></div></div>`).join('');
+  filteredDyn.forEach(q=>setTimeout(()=>{const el=document.getElementById('dthumb-'+q.id);if(!el||el.children.length)return;try{new QRCode(el,{text:q.currentUrl,width:40,height:40,colorDark:'#000',colorLight:'#fff',correctLevel:QRCode.CorrectLevel.L});}catch(e){}},80));
+}
+function selectDyn(id){selDyn=id;renderDynList();renderDynMain();}
+function renderDynMain(){
+  const q=dynQRs.find(x=>x.id===selDyn);if(!q)return;
+  document.getElementById('dynMain').innerHTML=`
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;gap:16px;">
+      <div style="flex:1;"><div style="font-size:20px;font-weight:700;color:#fff;margin-bottom:6px;display:flex;align-items:center;gap:10px;"><i class="ti ${catIcon[q.cat]}" style="font-size:22px;color:${catColor[q.cat]};"></i>${q.name}</div>
+      <div style="display:flex;align-items:center;gap:8px;"><span class="pill pill-${q.status}" style="font-size:12px;padding:4px 10px;"><i class="ti ${q.status==='active'?'ti-circle-check':'ti-circle-pause'}" style="font-size:12px;"></i>${q.status==='active'?'Activo':'Pausado'}</span><span style="font-size:12px;color:#555;"><i class="ti ti-calendar" style="font-size:12px;margin-right:3px;"></i>${q.history[0].date}</span></div></div>
+      <div style="background:#fff;border-radius:14px;padding:12px;" id="dynQRPreview"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px;">
+      <div style="background:#1a1a24;border:0.5px solid #2a2a3a;border-radius:12px;padding:14px;"><div style="font-size:11px;color:#555;margin-bottom:4px;display:flex;align-items:center;gap:4px;"><i class="ti ti-scan" style="color:#7c3aed;font-size:13px;"></i> Total</div><div style="font-size:20px;font-weight:700;color:#fff;">${q.scans.toLocaleString('es-CO')}</div></div>
+      <div style="background:#1a1a24;border:0.5px solid #2a2a3a;border-radius:12px;padding:14px;"><div style="font-size:11px;color:#555;margin-bottom:4px;display:flex;align-items:center;gap:4px;"><i class="ti ti-sun" style="color:#f59e0b;font-size:13px;"></i> Hoy</div><div style="font-size:20px;font-weight:700;color:#fff;">${q.today}</div></div>
+      <div style="background:#1a1a24;border:0.5px solid #2a2a3a;border-radius:12px;padding:14px;"><div style="font-size:11px;color:#555;margin-bottom:4px;display:flex;align-items:center;gap:4px;"><i class="ti ti-users" style="color:#34d399;font-size:13px;"></i> Únicos</div><div style="font-size:20px;font-weight:700;color:#fff;">${q.unique.toLocaleString('es-CO')}</div></div>
+    </div>
+    <div class="section-head"><i class="ti ti-pencil"></i> Cambiar destino</div>
+    <div class="url-editor-box">
+      <div style="font-size:11px;color:#666;margin-bottom:8px;display:flex;align-items:center;gap:5px;"><i class="ti ti-circle-check" style="color:#34d399;font-size:14px;"></i> Destino actual</div>
+      <div class="url-current-row"><i class="ti ti-link"></i><span>${q.currentUrl}</span><i class="ti ti-external-link" style="color:#444;font-size:14px;cursor:pointer;" onclick="window.open('${q.currentUrl}','_blank')"></i></div>
+      <div style="display:flex;align-items:center;gap:6px;margin:10px 0;color:#444;font-size:12px;"><i class="ti ti-arrow-down" style="font-size:18px;color:#7c3aed;"></i> Nuevo destino</div>
+      <div class="url-new-row"><input type="url" id="dynNewUrl" placeholder="https://nuevo-destino.com/..."><button class="btn btn-primary" onclick="updateDyn(${q.id})"><i class="ti ti-check"></i> Actualizar</button></div>
+    </div>
+    <div class="section-head" style="margin-top:4px;"><i class="ti ti-history"></i> Historial de cambios</div>
+    <div style="background:#1a1a24;border:0.5px solid #2a2a3a;border-radius:12px;overflow:hidden;margin-bottom:20px;">
+      ${q.history.map(h=>`<div class="log-item"><div class="log-dot ${h.current?'log-dot-on':'log-dot-off'}"></div><div style="flex:1;min-width:0;"><div class="log-url"><i class="ti ti-link" style="font-size:10px;margin-right:3px;color:#444;"></i>${h.url}</div><div class="log-date"><i class="ti ti-clock" style="font-size:10px;"></i>${h.date}</div></div>${h.current?'<span style="background:#062a12;color:#34d399;font-size:10px;padding:2px 8px;border-radius:6px;display:flex;align-items:center;gap:3px;flex-shrink:0;"><i class="ti ti-star" style="font-size:10px;"></i>Actual</span>':''}</div>`).join('')}
+    </div>
+    <div class="section-head"><i class="ti ti-settings"></i> Acciones</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="btn" onclick="downloadDynQR()"><i class="ti ti-download"></i> Descargar QR</button>
+      <button class="btn" onclick="showToast('Enlace copiado: https://qr.st/${q.id}abc')"><i class="ti ti-copy"></i> Enlace corto</button>
+      <button class="btn" onclick="toggleDynStatus(${q.id})"><i class="ti ${q.status==='active'?'ti-player-pause':'ti-player-play'}"></i> ${q.status==='active'?'Pausar':'Reactivar'}</button>
+      <button class="btn" style="border-color:#4a1a1a;color:#f87171;" onclick="deleteDyn(${q.id})"><i class="ti ti-trash"></i> Eliminar</button>
+    </div>`;
+  setTimeout(()=>{const el=document.getElementById('dynQRPreview');if(!el)return;try{new QRCode(el,{text:q.currentUrl,width:100,height:100,colorDark:'#000',colorLight:'#fff',correctLevel:QRCode.CorrectLevel.M});}catch(e){}},80);
+}
+function updateDyn(id){
+  const q=dynQRs.find(x=>x.id===id),u=document.getElementById('dynNewUrl').value.trim();
+  if(!u||!u.startsWith('http')){showToast('⚠️ Ingresa una URL válida');return;}
+  q.history.forEach(h=>h.current=false);
+  q.history.unshift({url:u,date:new Date().toLocaleString('es-CO',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}),current:true});
+  q.currentUrl=u;renderDynList();renderDynMain();showToast('Destino actualizado correctamente');
+}
+function toggleDynStatus(id){const q=dynQRs.find(x=>x.id===id);if(q){q.status=q.status==='active'?'paused':'active';renderDynList();renderDynMain();}}
+function deleteDyn(id){dynQRs=dynQRs.filter(x=>x.id!==id);filteredDyn=filteredDyn.filter(x=>x.id!==id);selDyn=null;renderDynList();document.getElementById('dynMain').innerHTML='<div class="empty-dyn" style="flex:1;"><i class="ti ti-trash" style="font-size:48px;color:#2a1010;"></i><p style="color:#f87171;">QR eliminado.</p></div>';showToast('QR eliminado');}
+function downloadDynQR(){const canvas=document.querySelector('#dynQRPreview canvas');if(!canvas)return;const a=document.createElement('a');a.href=canvas.toDataURL();a.download='kurati-qr-dinamico.png';a.click();}
+function openDynModal(){document.getElementById('dynModal').classList.add('open');}
+function closeDynModal(){document.getElementById('dynModal').classList.remove('open');}
+function createDynQR(){
+  const name=document.getElementById('newDynName').value.trim(),url=document.getElementById('newDynUrl').value.trim(),cat=document.getElementById('newDynCat').value;
+  if(!name||!url){showToast('⚠️ Completa nombre y URL');return;}
+  const q={id:Date.now(),name,cat,status:'active',currentUrl:url,history:[{url,date:new Date().toLocaleString('es-CO',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}),current:true}],scans:0,today:0,unique:0};
+  dynQRs.unshift(q);filteredDyn=[...dynQRs];closeDynModal();renderDynList();selectDyn(q.id);showToast('QR dinámico creado exitosamente');
+}
+
+// ANALYTICS
+let lineInst=null,donutInst=null;
+function rnd(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
+function initAnalytics(){initLine(30);initDonut();renderLocs();renderHours();}
+function initLine(days){
+  const labels=[],data=[];
+  for(let i=days-1;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);labels.push(d.toLocaleDateString('es-CO',{day:'2-digit',month:'short'}));data.push(rnd(180,700));}
+  const ctx=document.getElementById('lineChart').getContext('2d');
+  if(lineInst)lineInst.destroy();
+  lineInst=new Chart(ctx,{type:'line',data:{labels,datasets:[{label:'Escaneos',data,borderColor:'#7c3aed',backgroundColor:'rgba(124,58,237,0.08)',borderWidth:2,pointRadius:2,fill:true,tension:0.4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'#1e1e2e'},ticks:{color:'#444',maxTicksLimit:10,font:{size:10}}},y:{grid:{color:'#1e1e2e'},ticks:{color:'#444',font:{size:10}},beginAtZero:true}}}});
+}
+function setRange(d,el){document.querySelectorAll('.rtab').forEach(b=>b.classList.remove('active'));el.classList.add('active');initLine(d);}
+function initDonut(){
+  const ctx=document.getElementById('donutChart').getContext('2d');
+  if(donutInst)donutInst.destroy();
+  donutInst=new Chart(ctx,{type:'doughnut',data:{labels:['Móvil','Escritorio','Tablet'],datasets:[{data:[62,28,10],backgroundColor:['#7c3aed','#34d399','#f59e0b'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,cutout:'72%',plugins:{legend:{display:false}}}});
+}
+function renderLocs(){
+  const locs=[{n:'Bogotá',p:42},{n:'Medellín',p:24},{n:'Cali',p:14},{n:'Barranquilla',p:9},{n:'Bucaramanga',p:6},{n:'Otros',p:5}];
+  document.getElementById('locList').innerHTML=locs.map(l=>`<div class="loc-item"><span class="loc-name"><i class="ti ti-map-pin" style="font-size:11px;margin-right:3px;color:#555;"></i>${l.n}</span><div class="loc-bar-wrap"><div class="loc-bar" style="width:${l.p}%"></div></div><span class="loc-pct">${l.p}%</span></div>`).join('');
+}
+function renderHours(){
+  const base=[2,1,1,1,2,4,8,15,22,28,24,20,18,16,14,18,22,26,24,20,14,10,6,3];
+  const hrs=base.map(v=>Math.max(0,v+rnd(-2,2))),mx=Math.max(...hrs);
+  document.getElementById('hourGrid').innerHTML=hrs.map((v,i)=>`<div class="hour-cell" style="background:rgba(124,58,237,${(0.1+v/mx*0.9).toFixed(2)})" title="${i}:00 — ${v} escaneos"></div>`).join('');
+  document.getElementById('hourLabels').innerHTML=hrs.map((_,i)=>`<div class="hour-lbl">${i%4===0?i+'h':''}</div>`).join('');
+}
+
+// BATCH
+function handleCSV(e){
+  const file=e.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    const lines=ev.target.result.split('\n').filter(l=>l.trim());
+    const rows=lines.slice(1).map(l=>{const[name,...rest]=l.split(',');return{name:name?.trim(),url:rest.join(',').trim()};}).filter(r=>r.name&&r.url);
+    if(!rows.length){showToast('⚠️ No se encontraron filas válidas');return;}
+    document.getElementById('batchResult').style.display='block';
+    const grid=document.getElementById('batchGrid');
+    grid.innerHTML=rows.slice(0,9).map((r,i)=>`<div style="background:#1a1a24;border:0.5px solid #2a2a3a;border-radius:12px;padding:14px;text-align:center;"><div style="background:#fff;border-radius:8px;padding:8px;margin-bottom:8px;" id="batch-qr-${i}"></div><div style="font-size:11px;color:#aaa;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${r.name}</div><button class="btn" style="width:100%;margin-top:6px;padding:6px;font-size:11px;" onclick="downloadBatch(${i},'${r.name}')"><i class="ti ti-download"></i></button></div>`).join('');
+    rows.slice(0,9).forEach((r,i)=>setTimeout(()=>{const el=document.getElementById('batch-qr-'+i);if(!el)return;try{new QRCode(el,{text:r.url,width:80,height:80,colorDark:'#000',colorLight:'#fff',correctLevel:QRCode.CorrectLevel.L});}catch(e){}},i*60));
+    showToast(`${rows.length} QRs generados`);
+  };
+  reader.readAsText(file);
+}
+function downloadBatch(i,name){const canvas=document.querySelector(`#batch-qr-${i} canvas`);if(!canvas)return;const a=document.createElement('a');a.href=canvas.toDataURL();a.download=`qr-${name}.png`;a.click();}
+function downloadTemplate(){const c='nombre,url\nProducto A,https://tienda.co/a\nProducto B,https://tienda.co/b\nSucursal Norte,https://maps.google.com/abc';const b=new Blob([c],{type:'text/csv'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='plantilla-kurati.csv';a.click();}
+
+// SETTINGS
+function toggleApiKey(){const f=document.getElementById('apiKeyField'),i=document.getElementById('apiKeyIcon');f.type=f.type==='password'?'text':'password';i.className='ti '+(f.type==='password'?'ti-eye':'ti-eye-off');}
+
+// INIT
+renderGenFields();
+genQR();
+</script>
+</body>
+</html>
